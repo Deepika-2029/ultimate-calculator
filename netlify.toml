@@ -1,0 +1,21 @@
+# Netlify Build Configuration
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Redirect /api/* to Netlify Functions
+[[redirects]]
+  from = "/api/history"
+  to   = "/.netlify/functions/history"
+  status = 200
+
+# SPA fallback — React Router support
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
