@@ -1,30 +1,40 @@
-// Frontend API helper — wraps all /api calls
+// Frontend Storage Helper — uses LocalStorage instead of a backend
 
-const BASE = "/api";  // Vite proxy handles the routing to port 3001
+const STORAGE_KEY = "ultimate_calc_history";
 
-// Fetch all history entries from DB
+// Helper to read from LocalStorage
+const readStorage = () => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Fetch all history entries
 export async function fetchHistory() {
-  const res  = await fetch(`${BASE}/history`);
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error);
-  return data.history;   // [{ id, entry, created_at }, ...]
+  // Simulate network delay for realistic UI feedback
+  await new Promise(r => setTimeout(r, 300));
+  return readStorage();
 }
 
-// Save one entry to DB
+// Save one entry to LocalStorage
 export async function saveHistory(entry) {
-  const res  = await fetch(`${BASE}/history`, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ entry }),
-  });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error);
-  return data.id;
+  const current = readStorage();
+  const newEntry = {
+    id: Date.now(),
+    entry,
+    created_at: new Date().toISOString()
+  };
+  
+  // Keep only the latest 100 entries
+  const updated = [newEntry, ...current].slice(0, 100);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return newEntry.id;
 }
 
-// Delete all entries from DB
+// Delete all entries from LocalStorage
 export async function clearHistory() {
-  const res  = await fetch(`${BASE}/history`, { method: "DELETE" });
-  const data = await res.json();
-  if (!data.ok) throw new Error(data.error);
+  localStorage.removeItem(STORAGE_KEY);
 }
